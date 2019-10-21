@@ -1,0 +1,4 @@
+.mypy_cache
+.vscode
+.noseids
+__pycache__
