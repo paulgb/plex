@@ -1,49 +1,93 @@
 import ast
 from typing import Set
+from functools import reduce
+from operator import or_
 
 
-class Cell:
-    def __init__(self, inputs, outputs, code):
-        self.inputs = inputs
-        self.outputs = outputs
-        self.code = code
-
-    def run(self, params):
-        exec(self.code, globals(), params)
-        return {p: params[p] for p in self.outputs}
+def union(*collected_names):
+    return reduce(or_, collected_names)
 
 
-def collect_names(elem):
+class CollectedNames:
+    def __init__(self, names=None, inputs=None, outputs=None):
+        self.names = names or set()
+        self.inputs = inputs or set()
+        self.outputs = outputs or set()
+        assert isinstance(self.names, set)
+        assert isinstance(self.inputs, set)
+        assert isinstance(self.outputs, set)
+
+    def __repr__(self):
+        return (f'CollectedNames(names={self.names}, '
+                f'inputs={self.inputs}, '
+                f'outputs={self.outputs})')
+
+    def names_to_inputs(self):
+        return CollectedNames(
+            set(),
+            self.inputs | self.names,
+            self.outputs
+        )
+
+    def names_to_outputs(self):
+        return CollectedNames(
+            set(),
+            self.inputs,
+            self.outputs | self.names
+        )
+
+    def __or__(self, other: 'CollectedNames'):
+        assert isinstance(other, CollectedNames)
+        return CollectedNames(self.names | other.names,
+                              self.inputs | other.inputs,
+                              self.outputs | other.outputs)
+
+    def __sub__(self, other: 'CollectedNames'):
+        assert isinstance(other, CollectedNames)
+        return CollectedNames(self.names - other.names,
+                              self.inputs - other.inputs,
+                              self.outputs - other.outputs)
+
+
+def collect_names(elem) -> CollectedNames:
     if isinstance(elem, (ast.Tuple, ast.List)):
-        return set.union(*(collect_names(e) for e in elem.elts))
+        return union(*(collect_names(e) for e in elem.elts))
+    elif isinstance(elem, ast.Num):
+        return CollectedNames()
     elif isinstance(elem, ast.Name):
-        return {elem.id}
+        return CollectedNames({elem.id})
     elif isinstance(elem, ast.BinOp):
         return collect_names(elem.left) | collect_names(elem.right)
     elif isinstance(elem, ast.Expr):
         return collect_names(elem.value)
+    elif isinstance(elem, ast.FunctionDef):
+        names = collect_body_vars(elem.body)
+        args = {a.arg for a in elem.args.args}
+        return CollectedNames(names.inputs - args) | CollectedNames(
+            outputs={elem.name})
+    elif isinstance(elem, ast.Return):
+        return collect_names(elem.value)
     elif isinstance(elem, ast.Call):
-        return set.union({elem.func.id}, *(collect_names(c)
-                                           for c in elem.args))
+        return (union(*(collect_names(c) for c in elem.args)) |
+                CollectedNames({elem.func.id}))
+    elif isinstance(elem, ast.Subscript):
+        return (collect_names(elem.value) |
+                collect_names(elem.slice.value).names_to_inputs())
+    elif isinstance(elem, ast.Assign):
+        return (collect_names(elem.value) |
+                collect_names(elem.targets[0]).names_to_outputs())
+    elif isinstance(elem, ast.AugAssign):
+        rec = collect_names(elem.target)
+        return (rec
+                | rec.names_to_outputs()
+                | collect_names(elem.value).names_to_outputs())
     else:
-        return set()
+        assert False, elem
+        return CollectedNames()
 
 
-def collect_statement_vars(statement):
-    if isinstance(statement, ast.Assign):
-        return (collect_names(statement.value),
-                collect_names(statement.targets[0]))
-    if isinstance(statement, ast.AugAssign):
-        rec = collect_names(statement.target)
-        return rec, rec | collect_names(statement.value)
-    elif isinstance(statement, ast.FunctionDef):
-        inputs, outputs = collect_body_vars(statement.body)
-        args = {a.arg for a in statement.args.args}
-        return inputs - args, {statement.name}
-    elif isinstance(statement, ast.Return):
-        return collect_names(statement.value), set()
-    else:
-        return set(), set()
+def collect_names_flat(elem):
+    return collect_names(elem).names_to_inputs()
 
 
 def collect_body_vars(body):
@@ -51,18 +95,8 @@ def collect_body_vars(body):
     inputs: Set[str] = set()
 
     for statement in body:
-        i_, o_ = collect_statement_vars(statement)
-        inputs.update(i_ - outputs)
-        outputs.update(o_)
+        names = collect_names_flat(statement)
+        inputs.update(names.inputs - outputs)
+        outputs.update(names.outputs)
 
-    return inputs, outputs
-
-
-def parse_cell(cell: str):
-    result = ast.parse(cell)
-
-    inputs, outputs = collect_body_vars(result.body)
-
-    code = compile(result, '<ast>', 'exec')
-
-    return Cell(inputs, outputs, code)
+    return CollectedNames(inputs=inputs, outputs=outputs)
