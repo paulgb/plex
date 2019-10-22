@@ -5,6 +5,8 @@ from operator import or_
 
 
 def union(*collected_names):
+    if not collected_names:
+        return CollectedNames()
     return reduce(or_, collected_names)
 
 
@@ -72,6 +74,7 @@ def collect_names(elem) -> CollectedNames:
                 CollectedNames({elem.func.id}))
     elif isinstance(elem, ast.Subscript):
         return (collect_names(elem.value) |
+                collect_names(elem.value).names_to_inputs() |
                 collect_names(elem.slice.value).names_to_inputs())
     elif isinstance(elem, ast.Assign):
         return (collect_names(elem.value) |
@@ -81,6 +84,11 @@ def collect_names(elem) -> CollectedNames:
         return (rec
                 | rec.names_to_outputs()
                 | collect_names(elem.value).names_to_outputs())
+    elif isinstance(elem, ast.Dict):
+        return (union(*(collect_names(e) for e in elem.keys))
+                | union(*(collect_names(e) for e in elem.values)))
+    elif isinstance(elem, ast.Str):
+        return CollectedNames()
     else:
         assert False, elem
         return CollectedNames()

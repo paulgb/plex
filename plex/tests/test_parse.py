@@ -98,5 +98,22 @@ a = b[c]
 a[d] = b[c]
         """)
 
-        self.assertSetEqual({'b', 'c', 'd'}, r.inputs)
+        self.assertSetEqual({'a', 'b', 'c', 'd'}, r.inputs)
+        self.assertSetEqual({'a'}, r.outputs)
+
+    def test_index_assignment2(self):
+        r = Cell.from_string("""
+a[b] = b[c]
+        """)
+
+        self.assertSetEqual({'a', 'b', 'c'}, r.inputs)
+        self.assertSetEqual({'a'}, r.outputs)
+
+    def test_index_assignment3(self):
+        r = Cell.from_string(r"""
+a = {}
+a[b] = b[c]
+        """)
+
+        self.assertSetEqual({'b', 'c'}, r.inputs)
         self.assertSetEqual({'a'}, r.outputs)

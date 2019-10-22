@@ -30,4 +30,10 @@ class TestCollectNames(TestCase):
         self.assertCollected('a = b[c]', {'b', 'c'}, {'a'})
 
     def test_collect_assign_index(self):
-        self.assertCollected('a[c] = b', {'b', 'c'}, {'a'})
+        self.assertCollected('a[c] = b', {'a', 'b', 'c'}, {'a'})
+
+    def test_collect_list(self):
+        self.assertCollected('[a, [b, c]]', {'a', 'b', 'c'})
+
+    def test_collect_dict(self):
+        self.assertCollected('{a: b, c: "d"}', {'a', 'b', 'c'})
