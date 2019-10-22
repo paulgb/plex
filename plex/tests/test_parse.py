@@ -67,6 +67,12 @@ def foo(a, b):
         self.assertSetEqual({'a'}, r.inputs)
         self.assertSetEqual({'a'}, r.outputs)
 
+    def test_aug_assign2(self):
+        r = Cell.from_string('a += b')
+
+        self.assertSetEqual({'a', 'b'}, r.inputs)
+        self.assertSetEqual({'a'}, r.outputs)
+
     def test_new_var(self):
         r = Cell.from_string("""
 a = 4

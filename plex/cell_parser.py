@@ -83,7 +83,7 @@ def collect_names(elem) -> CollectedNames:
         rec = collect_names(elem.target)
         return (rec
                 | rec.names_to_outputs()
-                | collect_names(elem.value).names_to_outputs())
+                | collect_names(elem.value))
     elif isinstance(elem, ast.Dict):
         return (union(*(collect_names(e) for e in elem.keys))
                 | union(*(collect_names(e) for e in elem.values)))
