@@ -1,7 +1,4 @@
 from .cell import Cell
-from typing import Dict
-
-from .name_mapper import map_names
 
 
 class SequentialRunner:
