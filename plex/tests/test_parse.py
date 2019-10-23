@@ -123,3 +123,11 @@ a[b] = b[c]
 
         self.assertSetEqual({'b', 'c'}, r.inputs)
         self.assertSetEqual({'a'}, r.outputs)
+
+    def test_multiple_assign(self):
+        r = Cell.from_string("""
+a = b = c
+        """)
+
+        self.assertSetEqual({'c'}, r.inputs)
+        self.assertSetEqual({'a', 'b'}, r.outputs)

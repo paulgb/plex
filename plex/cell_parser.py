@@ -78,7 +78,8 @@ def collect_names(elem) -> CollectedNames:
                 collect_names(elem.slice.value).names_to_inputs())
     elif isinstance(elem, ast.Assign):
         return (collect_names(elem.value) |
-                collect_names(elem.targets[0]).names_to_outputs())
+                union(*(collect_names(t).names_to_outputs()
+                        for t in elem.targets)))
     elif isinstance(elem, ast.AugAssign):
         rec = collect_names(elem.target)
         return (rec
