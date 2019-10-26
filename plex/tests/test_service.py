@@ -49,3 +49,30 @@ class TestService(TestCase):
                 cell_result_message(0, '4')
             ]
         )
+
+    def testMultiCell(self):
+        self.assertMessage(
+            update_cell_message(0, 'a = 4'),
+            [
+                running_cell_message(0),
+                cell_result_message(0, '4')
+            ]
+        )
+
+        self.assertMessage(
+            update_cell_message(1, 'b = a + 3'),
+            [
+                running_cell_message(1),
+                cell_result_message(1, '7')
+            ]
+        )
+
+        self.assertMessage(
+            update_cell_message(0, 'a = 9'),
+            [
+                running_cell_message(0),
+                running_cell_message(1),
+                cell_result_message(0, '9'),
+                cell_result_message(1, '12'),
+            ]
+        )
