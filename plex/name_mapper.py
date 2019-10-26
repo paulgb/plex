@@ -1,8 +1,12 @@
 from .cell import Cell
-from typing import List
+from typing import Iterable, Generator, List, Tuple, Dict
+
+Mapping = Dict[str, Tuple[str, int]]
+InOutMappings = Tuple[Mapping, Mapping]
 
 
-def gen_map_names(cells: List[Cell]):
+def gen_map_names(cells: Iterable[Cell]) -> Generator[
+        InOutMappings, None, None]:
     mapping = dict()
     for cell in cells:
         inputs = dict()
@@ -20,5 +24,5 @@ def gen_map_names(cells: List[Cell]):
         yield inputs, outputs
 
 
-def map_names(cells: List[Cell]):
+def map_names(cells: Iterable[Cell]) -> List[InOutMappings]:
     return list(gen_map_names(cells))
