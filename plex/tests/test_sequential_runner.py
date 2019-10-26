@@ -6,7 +6,7 @@ from ..sequential_runner import SequentialRunner, CellStatus, CellValue
 class TestSequentialRunner(TestCase):
     def assertGen(self, expected, generator):
         self.assertListEqual(expected, list(generator))
-        
+
 
     def test_basic_sequence(self):
         runner = SequentialRunner()
@@ -37,7 +37,6 @@ class TestSequentialRunner(TestCase):
             ],
             runner.set_cell(1, 'b = a + 1')
         )
-
 
     def test_two_part_sequence_update(self):
         runner = SequentialRunner()

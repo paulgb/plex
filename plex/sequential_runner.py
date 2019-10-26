@@ -1,6 +1,7 @@
 from .cell import Cell
 from .name_mapper import map_names
 from enum import Enum
+from typing import Generator, Tuple
 
 
 class CellStatus(Enum):
@@ -12,13 +13,19 @@ class CellStatus(Enum):
 class CellValue:
     def __init__(self, status=CellStatus, value=None):
         self.status = status
-        self.value = value
+        self.value = str(value) if value is not None else None
 
     def __eq__(self, other):
         return (self.status, self.value) == (other.status, other.value)
 
     def __repr__(self):
-        return f'CellValue({self.status}, {self.value})'
+        return f'CellValue({self.status}, {repr(self.value)})'
+
+    def to_dict(self):
+        return {
+            'status': self.status.name,
+            'value': self.value
+        }
 
 
 class SequentialRunner:
@@ -26,7 +33,8 @@ class SequentialRunner:
         self.cells = dict()
         self.values = dict()
 
-    def set_cell(self, index: int, value: str):
+    def set_cell(self, index: int, value: str) -> Generator[
+            Tuple[int, CellValue], None, None]:
         cell = Cell.from_string(value)
         self.cells[index] = cell
 
@@ -65,7 +73,4 @@ class SequentialRunner:
                 in outs.items()
             })
 
-            if '__out' in result:
-                yield (i, CellValue(CellStatus.RAN, repr(result['__out'])))
-            else:
-                yield (i, None)
+            yield (i, CellValue(CellStatus.RAN, result.get('__out', None)))
