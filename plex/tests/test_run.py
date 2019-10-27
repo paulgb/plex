@@ -33,3 +33,11 @@ b += 2
         """)
 
         self.assertDictEqual({'b': 4, '__out': 4}, r.run({'b': 2}))
+
+    def test_collect_nothing(self):
+        r = Cell.from_string("""
+if True:
+    pass
+        """)
+
+        self.assertDictEqual({}, r.run({}))

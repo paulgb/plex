@@ -52,6 +52,8 @@ class CollectedNames:
 
 
 def collect_names(elem) -> CollectedNames:
+    if isinstance(elem, list):
+        return union(*(collect_names(e) for e in elem))
     if isinstance(elem, (ast.Tuple, ast.List)):
         return union(*(collect_names(e) for e in elem.elts))
     elif isinstance(elem, ast.Num):
@@ -88,7 +90,9 @@ def collect_names(elem) -> CollectedNames:
     elif isinstance(elem, ast.Dict):
         return (union(*(collect_names(e) for e in elem.keys))
                 | union(*(collect_names(e) for e in elem.values)))
-    elif isinstance(elem, ast.Str):
+    elif isinstance(elem, ast.If):
+        return collect_names(elem.test) | collect_names(elem.body)
+    elif isinstance(elem, (ast.Str, ast.NameConstant, ast.Pass)):
         return CollectedNames()
     else:
         assert False, elem
