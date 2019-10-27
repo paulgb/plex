@@ -7,7 +7,6 @@ class TestSequentialRunner(TestCase):
     def assertGen(self, expected, generator):
         self.assertListEqual(expected, list(generator))
 
-
     def test_basic_sequence(self):
         runner = SequentialRunner()
 

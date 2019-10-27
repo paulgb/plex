@@ -26,3 +26,10 @@ b + 2
         """)
 
         self.assertDictEqual({'b': 3, '__out': 5}, r.run({'b': 2}))
+
+    def test_collect_assign(self):
+        r = Cell.from_string("""
+b += 2
+        """)
+
+        self.assertDictEqual({'b': 4, '__out': 4}, r.run({'b': 2}))

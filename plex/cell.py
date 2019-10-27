@@ -16,7 +16,7 @@ class Cell:
     @staticmethod
     def from_string(cell: str):
         result = ast.parse(cell)
-        
+
         names = collect_body_vars(result.body)
 
         if isinstance(result.body[-1], ast.Expr):
@@ -26,6 +26,16 @@ class Cell:
         elif isinstance(result.body[-1], ast.Assign):
             result.body[-1].targets.append(
                 ast.Name('__out', lineno=0, col_offset=0, ctx=ast.Store()))
-        
+        elif isinstance(result.body[-1], ast.AugAssign):
+            result.body.append(
+                ast.Assign([
+                    ast.Name('__out', lineno=0, col_offset=0, ctx=ast.Store())
+                ], ast.Name(result.body[-1].target.id, lineno=0,
+                            col_offset=0,
+                            ctx=ast.Load()), lineno=0,
+                            col_offset=0,
+                            ctx=ast.Load()
+                ))
+
         code = compile(result, '<ast>', 'exec')
         return Cell(names.inputs, names.outputs, code)
