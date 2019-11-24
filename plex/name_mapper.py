@@ -27,5 +27,6 @@ def gen_map_names(cells: Iterable[Cell], globs: set) -> Generator[
         yield inputs, outputs
 
 
-def map_names(cells: Iterable[Cell], globs: set = set()) -> List[InOutMappings]:
+def map_names(cells: Iterable[Cell], globs: set = set()
+              ) -> List[InOutMappings]:
     return list(gen_map_names(cells, globs))

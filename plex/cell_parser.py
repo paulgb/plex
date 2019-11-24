@@ -97,9 +97,10 @@ def collect_names(elem) -> CollectedNames:
     elif isinstance(elem, ast.If):
         return collect_names(elem.test) | collect_names(elem.body)
     elif isinstance(elem, ast.For):
+        tgt = collect_names(elem.target)
         return (collect_names(elem.iter) |
-                collect_names(elem.body) |
-                collect_names(elem.target).names_to_outputs())
+                (collect_names(elem.body) - tgt) |
+                tgt.names_to_outputs())
     elif isinstance(elem, ast.Attribute):
         return collect_names(elem.value)
     elif isinstance(elem, (ast.Str, ast.NameConstant, ast.Pass)):

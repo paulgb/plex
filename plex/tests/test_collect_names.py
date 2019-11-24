@@ -47,5 +47,5 @@ class TestCollectNames(TestCase):
     def test_collect_for(self):
         self.assertCollected('''
 for i in range(b):
-    a += 3
+    a += 3 + i
         ''', {'a', 'b', 'range'}, {'a', 'i'})
