@@ -131,3 +131,9 @@ a = b = c
 
         self.assertSetEqual({'c'}, r.inputs)
         self.assertSetEqual({'a', 'b'}, r.outputs)
+
+    def test_func_call(self):
+        r = Cell.from_string("foo(a)")
+
+        self.assertSetEqual({'a', 'foo'}, r.inputs)
+        self.assertSetEqual(set(), r.outputs)

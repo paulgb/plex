@@ -95,7 +95,7 @@ def collect_names(elem) -> CollectedNames:
     elif isinstance(elem, (ast.Str, ast.NameConstant, ast.Pass)):
         return CollectedNames()
     else:
-        assert False, elem
+        # assert False, elem
         return CollectedNames()
 
 

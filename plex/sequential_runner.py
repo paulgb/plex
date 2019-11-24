@@ -35,13 +35,23 @@ class SequentialRunner:
 
     def set_cell(self, index: int, value: str) -> Generator[
             Tuple[int, CellValue], None, None]:
-        cell = Cell.from_string(value)
+        try:
+            cell = Cell.from_string(value)
+        except SyntaxError:
+            yield (index, CellValue(CellStatus.ERROR, 'SyntaxError'))
+            return
         self.cells[index] = cell
 
         cell_indices = list(sorted(self.cells))
 
-        mapped_cells = dict(zip(cell_indices, map_names(
-            self.cells[i] for i in cell_indices)))
+        try:
+            mapped_cells = dict(zip(cell_indices, map_names(
+                (self.cells[i] for i in cell_indices), __builtins__)))
+        except NameError as e:
+            i, v = e.args
+            ix = cell_indices[i]
+            yield (ix, CellValue(CellStatus.ERROR, 'NameError'))
+            return
 
         _, changed_outputs = mapped_cells[index]
         changed_outputs = set(changed_outputs)
@@ -64,6 +74,8 @@ class SequentialRunner:
                 for name, mapped_name
                 in inps.items()
             }
+
+            print(input_vars)
 
             result = cell.run(input_vars)
 

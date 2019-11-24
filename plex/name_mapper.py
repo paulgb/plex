@@ -5,14 +5,17 @@ Mapping = Dict[str, Tuple[str, int]]
 InOutMappings = Tuple[Mapping, Mapping]
 
 
-def gen_map_names(cells: Iterable[Cell]) -> Generator[
+def gen_map_names(cells: Iterable[Cell], globs: set) -> Generator[
         InOutMappings, None, None]:
     mapping = dict()
-    for cell in cells:
+    for i, cell in enumerate(cells):
         inputs = dict()
         outputs = dict()
         for inp in cell.inputs:
-            assert inp in mapping
+            if inp not in mapping:
+                if inp in globs:
+                    continue
+                raise NameError(i, inp)
             inputs[inp] = mapping[inp]
         for out in cell.outputs:
             if out in mapping:
@@ -24,5 +27,5 @@ def gen_map_names(cells: Iterable[Cell]) -> Generator[
         yield inputs, outputs
 
 
-def map_names(cells: Iterable[Cell]) -> List[InOutMappings]:
-    return list(gen_map_names(cells))
+def map_names(cells: Iterable[Cell], globs: set = set()) -> List[InOutMappings]:
+    return list(gen_map_names(cells, globs))
