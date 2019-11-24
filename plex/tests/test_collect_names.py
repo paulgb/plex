@@ -43,3 +43,9 @@ class TestCollectNames(TestCase):
 
     def test_collect_funccall(self):
         self.assertCollected('a.b()', {'a'})
+
+    def test_collect_for(self):
+        self.assertCollected('''
+for i in range(b):
+    a += 3
+        ''', {'a', 'b', 'range'}, {'a', 'i'})
