@@ -108,6 +108,7 @@ class TestSequentialRunner(TestCase):
             runner.set_cell(0, 'int("3")')
         )
 
+    """
     def test_func_def_and_call(self):
         runner = SequentialRunner()
 
@@ -134,3 +135,4 @@ class TestSequentialRunner(TestCase):
             ],
             runner.set_cell(2, 'foo(5)')
         )
+    """

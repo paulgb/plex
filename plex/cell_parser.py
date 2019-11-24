@@ -72,8 +72,12 @@ def collect_names(elem) -> CollectedNames:
     elif isinstance(elem, ast.Return):
         return collect_names(elem.value)
     elif isinstance(elem, ast.Call):
-        return (union(*(collect_names(c) for c in elem.args)) |
-                CollectedNames({elem.func.id}))
+        if isinstance(elem.func, ast.Attribute):
+            return (union(*(collect_names(c) for c in elem.args)) |
+                    collect_names(elem.func))
+        else:
+            return (union(*(collect_names(c) for c in elem.args)) |
+                    CollectedNames({elem.func.id}))
     elif isinstance(elem, ast.Subscript):
         return (collect_names(elem.value) |
                 collect_names(elem.value).names_to_inputs() |
@@ -92,10 +96,14 @@ def collect_names(elem) -> CollectedNames:
                 | union(*(collect_names(e) for e in elem.values)))
     elif isinstance(elem, ast.If):
         return collect_names(elem.test) | collect_names(elem.body)
+    elif isinstance(elem, ast.Attribute):
+        return collect_names(elem.value)
     elif isinstance(elem, (ast.Str, ast.NameConstant, ast.Pass)):
         return CollectedNames()
+    elif elem is None:
+        return CollectedNames()
     else:
-        # assert False, elem
+        assert False, elem
         return CollectedNames()
 
 

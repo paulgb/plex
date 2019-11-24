@@ -37,3 +37,9 @@ class TestCollectNames(TestCase):
 
     def test_collect_dict(self):
         self.assertCollected('{a: b, c: "d"}', {'a', 'b', 'c'})
+
+    def test_collect_attribute(self):
+        self.assertCollected('a.b', {'a'})
+
+    def test_collect_funccall(self):
+        self.assertCollected('a.b()', {'a'})

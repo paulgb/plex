@@ -75,9 +75,11 @@ class SequentialRunner:
                 in inps.items()
             }
 
-            print(input_vars)
-
-            result = cell.run(input_vars)
+            try:
+                result = cell.run(input_vars)
+            except Exception as e:
+                yield (i, CellValue(CellStatus.ERROR, str(e)))
+                break
 
             self.values.update({
                 mapped_name: result[name]
